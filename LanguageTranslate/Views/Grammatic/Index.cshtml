@@ -1,0 +1,58 @@
+@model IEnumerable<Grammatic>
+@{
+    ViewData["Title"] = "Index";
+}
+<h2>Index</h2>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            @*<th>
+                <label asp-for="CreateDate"></label>
+            </th>
+            <th>
+                <label asp-for="Title"></label>
+            </th>
+            <th>
+                <label asp-for="LastDateEdit"></label>
+            </th>
+            <th>
+                <label asp-for="CreateUserTitle"></label>
+            </th>
+            <th>
+                <label asp-for="LastUserEditTitle"></label>
+            </th>
+            <th></th>*@
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+            {
+            <tr>
+                <td>
+                    @item.CreateDate.ToString("dd.MM.yyyy HH:mm")
+                </td>
+                <td>
+                    @item.Title
+                </td>
+                <td>
+                    @item.LastDateEdit.ToString("dd.MM.yyyy HH:mm")
+                </td>
+                <td>
+                    @item.CreateUserTitle
+                </td>
+                <td>
+                    @item.LastUserEditTitle
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.GrammaticId">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.GrammaticId">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.GrammaticId">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

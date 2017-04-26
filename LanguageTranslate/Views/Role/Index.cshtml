@@ -1,0 +1,30 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+@{
+    ViewData["Title"] = "Home Page";
+}
+@model List<IdentityRole>
+<div>
+    <h2>Список ролей</h2>
+    <table class="table">
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @item.Name
+                    </td>
+                    <td>
+                        <form asp-action="Delete" asp-route-id="@item.Id" method="post">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                Удалить
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+
+            }
+        </tbody>
+        </table>
+    <a asp-action="Create">Добавить роль</a>
+</div>

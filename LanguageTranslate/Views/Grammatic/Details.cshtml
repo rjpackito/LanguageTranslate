@@ -1,0 +1,54 @@
+@model LanguageTranslate.Models.Grammatic
+
+@{
+    ViewData["Title"] = "View";
+}
+
+<h2>View</h2>
+
+<div>
+    <h4>Grammatic</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            <label asp-for="CreateDate"></label>
+        </dt>
+        <dd>
+            <span for="CreateDate"></span>
+        </dd>
+        <dt>
+            <label asp-for="Title"></label>
+        </dt>
+        <dd>
+            <span for="Title"></span>
+        </dd>
+        <dt>
+            <label asp-for="LastDateEdit"></label>
+        </dt>
+        <dd>
+            <span for="LastDateEdit"></span>
+        </dd>
+        <dt>
+            <label asp-for="Text"></label>
+        </dt>
+        <dd>
+            <textarea id="Text"  asp-for="Text" name="Text" class="form-control resize" rows="20"></textarea>
+        </dd>       
+        <dt>
+            <label asp-for="CreateUserTitle"></label>
+        </dt>
+        <dd>
+            <span for="CreateUserTitle"></span>
+        </dd>
+        <dt>
+            <label asp-for="LastUserEditTitle"></label>
+        </dt>
+        <dd>
+            <span for="LastUserEditTitle"></span>
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.GrammaticId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
