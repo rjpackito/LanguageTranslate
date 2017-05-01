@@ -16,5 +16,7 @@ namespace LanguageTranslate.Data.DbModels
         public string Text { get; set; }
         public Guid CreateUserId { get; set; }
         public Guid LastUserEditId { get; set; }
+        public bool IsEdit { get; set; }
+        public bool IsValidate { get; set; }
     }
 }

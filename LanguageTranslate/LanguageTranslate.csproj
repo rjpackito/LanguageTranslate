@@ -48,5 +48,10 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-
+<PropertyGroup>
+    <UserSecretsId>aspnet-LanguageTranslate-1c4769ea-0b5d-4063-8503-4db3a46d94b6</UserSecretsId>
+    <ApplicationIcon />
+    <OutputTypeEx>exe</OutputTypeEx>
+    <StartupObject />
+  </PropertyGroup>
 </Project>

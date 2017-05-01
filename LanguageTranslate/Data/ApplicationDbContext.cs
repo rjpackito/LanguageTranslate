@@ -32,6 +32,6 @@ namespace LanguageTranslate.Data
             : base(options)
         {
         }
-        public DbSet<LanguageTranslate.Models.Grammatic> Grammatic { get; set; }
+        public DbSet<Grammatic> Grammatic { get; set; }
     }
 }

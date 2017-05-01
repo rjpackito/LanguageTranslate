@@ -24,5 +24,7 @@ namespace LanguageTranslate.Models
         public string CreateUserTitle { get; set; }
         [DisplayName("Отредактировал")]
         public string LastUserEditTitle { get; set; }
+        public bool IsEdit { get; set; }
+        public bool IsValidate { get; set; }
     }
 }
