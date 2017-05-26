@@ -70,7 +70,6 @@ namespace LanguageTranslate
             {
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
-                app.UseBrowserLink();
             }
             else
             {
@@ -110,6 +109,15 @@ namespace LanguageTranslate
             if (await roleManager.FindByNameAsync("Professor") == null)
             {
                 await roleManager.CreateAsync(new IdentityRole("Professor"));
+            }
+            if(await userManager.FindByNameAsync("sysadmin") == null)
+            {
+                ApplicationUser admin = new ApplicationUser { Email = "rjpackito@inbox.ru", UserName = "sysadmin" };
+                IdentityResult result = await userManager.CreateAsync(admin, "ltPassword12=");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(admin, "Administrator");
+                }
             }
         }
     }

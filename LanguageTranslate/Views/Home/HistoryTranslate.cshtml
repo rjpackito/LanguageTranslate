@@ -1,0 +1,46 @@
+﻿@model List<HistoryTranslate>
+@{
+    ViewData["Title"] = "Index";
+}
+<h2>История транслирований</h2>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            @*<th>
+                    <label asp-for="CreateDate"></label>
+                </th>
+                <th>
+                    <label asp-for="Title"></label>
+                </th>
+                <th>
+                    <label asp-for="LastDateEdit"></label>
+                </th>
+                <th>
+                    <label asp-for="CreateUserTitle"></label>
+                </th>
+                <th>
+                    <label asp-for="LastUserEditTitle"></label>
+                </th>
+                <th></th>*@
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+            {
+            <tr>
+                <td>
+                    @item.TranslateDate
+                </td>
+                <td>
+                    @item.Grammatic
+                </td>
+                <td>
+                    <a asp-action="Details" class="btn btn-primary" asp-route-id="@item.HistoryTranslateId">Просмотр</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<!--好-->

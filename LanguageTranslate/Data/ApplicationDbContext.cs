@@ -28,10 +28,14 @@ namespace LanguageTranslate.Data
     public class LanguageTranslateContext : DbContext
     {
         public DbSet<Grammatics> Grammatics { get; set; }
+        public DbSet<VerifiedGrammars> VerifiedGrammars { get; set; }
+        public DbSet<GeneratedDLLs> GeneratedDLLs { get; set; }
+        public DbSet<HistoryTranslates> HistoryTranslates { get; set; }
+        public DbSet<Paths> Paths { get; set; }
+        public DbSet<PathReferences> PathReferences { get; set; }
         public LanguageTranslateContext(DbContextOptions<LanguageTranslateContext> options)
             : base(options)
         {
         }
-        public DbSet<Grammatic> Grammatic { get; set; }
     }
 }

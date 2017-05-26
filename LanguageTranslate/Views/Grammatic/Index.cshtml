@@ -1,8 +1,8 @@
-@model IEnumerable<Grammatic>
+﻿@model IEnumerable<Grammatic>
 @{
     ViewData["Title"] = "Index";
 }
-<h2>Index</h2>
+<h2>Список грамматик</h2>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -11,21 +11,21 @@
     <thead>
         <tr>
             @*<th>
-                <label asp-for="CreateDate"></label>
-            </th>
-            <th>
-                <label asp-for="Title"></label>
-            </th>
-            <th>
-                <label asp-for="LastDateEdit"></label>
-            </th>
-            <th>
-                <label asp-for="CreateUserTitle"></label>
-            </th>
-            <th>
-                <label asp-for="LastUserEditTitle"></label>
-            </th>
-            <th></th>*@
+                    <label asp-for="CreateDate"></label>
+                </th>
+                <th>
+                    <label asp-for="Title"></label>
+                </th>
+                <th>
+                    <label asp-for="LastDateEdit"></label>
+                </th>
+                <th>
+                    <label asp-for="CreateUserTitle"></label>
+                </th>
+                <th>
+                    <label asp-for="LastUserEditTitle"></label>
+                </th>
+                <th></th>*@
         </tr>
     </thead>
     <tbody>
@@ -48,11 +48,15 @@
                     @item.LastUserEditTitle
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.GrammaticId">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.GrammaticId">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.GrammaticId">Delete</a>
+                    <a asp-action="Edit" class="btn btn-primary" asp-route-id="@item.GrammaticId">Редактировать</a>
+                    <a asp-action="Details" class="btn btn-info" asp-route-id="@item.GrammaticId">Просмотр</a> 
+@if (User.IsInRole("Administrator"))
+{
+                    <a asp-action="Validate" class="btn btn-success" asp-route-id="@item.GrammaticId">Валидация</a>}
+                    <a asp-action="Delete" class="btn btn-danger" asp-route-id="@item.GrammaticId">Удалить</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+<!--好-->

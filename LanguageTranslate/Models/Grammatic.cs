@@ -26,5 +26,10 @@ namespace LanguageTranslate.Models
         public string LastUserEditTitle { get; set; }
         public bool IsEdit { get; set; }
         public bool IsValidate { get; set; }
+        public ResultGenerate ResultGenerate { get; set; }
+        [DisplayName("Из языка программирования")]
+        public string FromLanguage { get; set; }
+        [DisplayName("В язык программирования")]
+        public string ToLanguage { get; set; }
     }
 }

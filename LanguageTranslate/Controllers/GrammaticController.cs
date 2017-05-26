@@ -11,7 +11,7 @@ using LanguageTranslate.Repository;
 
 namespace LanguageTranslate.Controllers
 {
-
+    [Authorize(Roles = "Professor, Administrator")]
     public class GrammaticController : Controller
     {
         UserManager<ApplicationUser> _userManager;
@@ -26,9 +26,9 @@ namespace LanguageTranslate.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Grammatic grammatic)
         {
-           
+
             Guid grammaticGuid = await _ltManager.AddGrammatic(grammatic);
-            return View("View", grammaticGuid);
+            return View("Details", grammaticGuid);
         }
         public async Task<IActionResult> Details(string id)
         {
@@ -39,7 +39,7 @@ namespace LanguageTranslate.Controllers
             }
             return View(grammatic);
         }
-        
+
         public async Task<IActionResult> Edit(string id)
         {
             Grammatic grammatic = await _ltManager.FindAsync(Guid.Parse(id));
@@ -56,7 +56,29 @@ namespace LanguageTranslate.Controllers
             {
                 return View("Error");
             }
-            return View(await _ltManager.Update(grammatic));
+            return View("Edit",await _ltManager.Update(grammatic));
+        }
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> Validate(string id)
+        {
+            Grammatic grammatic = await _ltManager.FindAsync(Guid.Parse(id));
+            if (grammatic == null)
+            {
+                return View("Error");
+            }
+            return View("Details", grammatic);
+        }
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> Validate(string id, int isvalid)
+        {
+            Guid grammaticGuid = await _ltManager.VerificiedChanges(Guid.Parse(id), isvalid == 1);
+            return View("Index", _ltManager.GetAll());
+        }
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> GenerateFile(string id)
+        {
+            return View("Details", await _ltManager.GenerataFile(Guid.Parse(id)));
         }
     }
 }

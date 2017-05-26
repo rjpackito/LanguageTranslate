@@ -1,13 +1,40 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+@model Translate
 
-
-<div class="row" style="margin-top:10px">
-    <div class=" col-md-5">
-<textarea class="form-control resize" rows="20"></textarea>    
-</div>
-    <div class="col-md-offset-1 col-md-5">
-        <textarea class="form-control resize" rows="20"></textarea>
+@if (Model.Result != null && Model.Result.ResultCode == 1)
+{
+    <div class="alert alert-success">
+        <span>Конвертация успешна</span>
     </div>
+}
+@if (Model.Result != null && Model.Result.ResultCode == 0)
+{
+    <div class="alert alert-danger">
+        <strong>Во время конвертации возникли ошибки. Список ошибок:</strong>
+        @foreach (var item in Model.Result.ErrorsMessage)
+                {
+            <span>item</span>
+        }
+    </div>
+}
+<div class="row" style="margin-top:10px">
+    <form  asp-action="Index" method="post">
+
+
+        <div class="form-inline" style="display:inherit;text-align: center;margin: 10px;">
+        
+            <select class="form-control" asp-for="SelectGrammatic" asp-items="Model.Grammatics"></select>
+            <button class="btn btn-success" type="submit">Транслировать</button>
+        </div>
+        <div>
+            <div class="col-md-5 form-group">
+                <textarea class="form-control resize" style="resize: none;" rows="20" asp-for="FromLanguage" name="FromLanguage"></textarea>
+            </div>
+            <div class="col-md-offset-1 col-md-5 form-group">
+                <textarea class="form-control resize" style="resize: none;" rows="20" asp-for="ToLanguage" name="ToLanguage"></textarea>
+            </div>
+        </div>
+    </form>
 </div>

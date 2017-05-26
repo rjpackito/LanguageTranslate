@@ -1,54 +1,71 @@
-@model LanguageTranslate.Models.Grammatic
+﻿@model LanguageTranslate.Models.Grammatic
 
 @{
-    ViewData["Title"] = "View";
+    ViewData["Title"] = "Просмотр";
 }
-
-<h2>View</h2>
-
+<!--好-->
 <div>
-    <h4>Grammatic</h4>
+    <h4>Грамматика</h4>
     <hr />
-    <dl class="dl-horizontal">
-        <dt>
+    <div class="dl-horizontal">
+        @if (Model.ResultGenerate != null && Model.ResultGenerate.ResultCode == 1)
+        {
+            <div class="alert alert-success">
+                <span>DLL сгенерирована успешно</span>
+            </div>
+        }
+        @if (Model.ResultGenerate != null && Model.ResultGenerate.ResultCode == 0)
+        {
+            <div class="alert alert-danger">
+                <strong>Во время генерации возникли ошибки. Список ошибок:</strong>
+                @foreach (var item in Model.ResultGenerate.ErrorsMessage)
+                {
+                    <span>item</span>
+                }
+            </div>
+        }
+        <div>
             <label asp-for="CreateDate"></label>
-        </dt>
-        <dd>
-            <span for="CreateDate"></span>
-        </dd>
-        <dt>
+            <span>@Model.CreateDate</span>
+        </div>
+        <div>
             <label asp-for="Title"></label>
-        </dt>
-        <dd>
-            <span for="Title"></span>
-        </dd>
-        <dt>
+            <span>@Model.Title</span>
+        </div>
+        <div>
             <label asp-for="LastDateEdit"></label>
-        </dt>
-        <dd>
-            <span for="LastDateEdit"></span>
-        </dd>
-        <dt>
+            <span>@Model.LastDateEdit</span>
+        </div>
+        <div>
             <label asp-for="Text"></label>
-        </dt>
-        <dd>
             <textarea id="Text" readonly asp-for="Text" name="Text" class="form-control resize" rows="20"></textarea>
-        </dd>       
-        <dt>
+        </div>
+        <div>
             <label asp-for="CreateUserTitle"></label>
-        </dt>
-        <dd>
-            <span for="CreateUserTitle"></span>
-        </dd>
-        <dt>
+            <span>@Model.CreateUserTitle</span>
+        </div>
+        <div>
             <label asp-for="LastUserEditTitle"></label>
-        </dt>
-        <dd>
-            <span for="LastUserEditTitle"></span>
-        </dd>
-    </dl>
+            <span>@Model.LastUserEditTitle</span>
+        </div>
+    </div>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.GrammaticId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.GrammaticId">Редактировать</a>
+    @if (User.IsInRole("Administrator"))
+    {
+        @if (!Model.IsValidate || Model.IsEdit)
+        {<form asp-action="Validate" method="post">
+
+        <button type="submit" asp-route-id="@Model.GrammaticId" asp-route-isvalid="1" class="btn btn-success">Верифицировать</button>
+        <button type="submit" asp-route-id="@Model.GrammaticId" asp-route-isvalid="0" class="btn btn-danger">Отклонить измения</button>
+
+    </form>
+        }
+        @if (Model.IsValidate)
+        {
+            <a asp-action="GenerateFile" class="btn btn-success" asp-route-id="@Model.GrammaticId">Сгенерировать</a>
+        }
+    }
+    <a class="btn btn-default" asp-action="Index">Назад в список</a>
 </div>
