@@ -20,6 +20,7 @@ using System.Text.RegularExpressions;
 using System.Runtime.Loader;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Extension;
 
 namespace LanguageTranslate.Repository
 {
@@ -43,19 +44,18 @@ namespace LanguageTranslate.Repository
             {
                 GrammaticId = grammaticGuid,
                 CreateDate = DateTime.Now,
-                LastDateEdit = DateTime.Now,
-                CreateUserId = Guid.Parse(_userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name).Result.Id),
-                LastUserEditId = Guid.Parse(_userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name).Result.Id),
+                EditDate = DateTime.Now,
+                CreateUserId = Guid.Parse((await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name)).Id),
                 Text = grammatic.Text,
                 Title = grammatic.Title,
                 FromLanguage = grammatic.FromLanguage,
-                ToLanguage = grammatic.ToLanguage
+                ToLanguage = grammatic.ToLanguage,
+                IsEdit = true
             };
             _ltContext.Grammatics.Add(grammaticDb);
             await _ltContext.SaveChangesAsync();
             return grammaticGuid;
         }
-
         public async Task<Grammatic> FindAsync(Guid grammaticGuid)
         {
             Grammatics grammaticsDb = await _ltContext.Grammatics.FindAsync(grammaticGuid);
@@ -65,12 +65,10 @@ namespace LanguageTranslate.Repository
                 CreateDate = grammaticsDb.CreateDate,
                 CreateUserId = grammaticsDb.CreateUserId,
                 GrammaticId = grammaticsDb.GrammaticId,
-                LastDateEdit = grammaticsDb.LastDateEdit,
-                LastUserEditId = grammaticsDb.LastUserEditId,
+                EditDate = grammaticsDb.EditDate,
                 Text = grammaticsDb.Text,
                 Title = grammaticsDb.Title,
-                CreateUserTitle = _userManager.FindByIdAsync(grammaticsDb.CreateUserId.ToString()).Result.UserName,
-                LastUserEditTitle = _userManager.FindByIdAsync(grammaticsDb.LastUserEditId.ToString()).Result.UserName,
+                CreateUserTitle = (await _userManager.FindByIdAsync(grammaticsDb.CreateUserId.ToString())).UserName,
                 IsValidate = grammaticsDb.IsValidate,
                 IsEdit = grammaticsDb.IsEdit,
                 FromLanguage = grammaticsDb.FromLanguage,
@@ -78,26 +76,62 @@ namespace LanguageTranslate.Repository
 
             };
         }
-        public IEnumerable<Grammatic> GetAll()
+        public async Task<int> Remove(Guid grammaticId)
         {
-            List<Grammatics> grammaticsDbList = _ltContext.Grammatics.ToList();
-            var grammaticList = grammaticsDbList.Select(s => new Grammatic
+            try
             {
-                CreateDate = s.CreateDate,
-                CreateUserId = s.CreateUserId,
-                GrammaticId = s.GrammaticId,
-                LastDateEdit = s.LastDateEdit,
-                LastUserEditId = s.LastUserEditId,
-                Text = s.Text,
-                Title = s.Title,
-                CreateUserTitle = _userManager.FindByIdAsync(s.CreateUserId.ToString()).Result.UserName,
-                LastUserEditTitle = _userManager.FindByIdAsync(s.LastUserEditId.ToString()).Result.UserName,
-                IsValidate = s.IsValidate,
-                IsEdit = s.IsEdit,
-                FromLanguage = s.FromLanguage,
-                ToLanguage = s.ToLanguage
-            });
-            return grammaticList;
+                Grammatics grammaticDb = _ltContext.Grammatics.Find(grammaticId);
+                if (grammaticDb != null)
+                {
+                    VerifiedGrammars vg = _ltContext.VerifiedGrammars.FirstOrDefault(s => s.GrammaticId == grammaticId);
+                    GeneratedDLLs genDLL = _ltContext.GeneratedDLLs.FirstOrDefault(s => s.GrammaticId == grammaticId);
+                    if (genDLL != null)
+                        _ltContext.GeneratedDLLs.Remove(genDLL);
+                    if (vg != null)
+                        _ltContext.VerifiedGrammars.Remove(vg);
+                    _ltContext.Grammatics.Remove(_ltContext.Grammatics.Find(grammaticId));
+                    await _ltContext.SaveChangesAsync();
+                    await CalculatePath();
+                    return 0;
+                }
+                return -1;
+            }
+            catch (Exception e)
+            {
+                return -1;
+            }
+        }
+        public async Task<IEnumerable<Grammatic>> GetAll()
+        {
+            List<Grammatics> grammaticsDbList;
+            if (_httpContextAccessor.HttpContext.User.IsInRole("Administrator"))
+                grammaticsDbList = _ltContext.Grammatics.ToList();
+            else
+            {
+                Guid userId = Guid.Parse((await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name)).Id);
+                grammaticsDbList = _ltContext.Grammatics.Where(w => w.CreateUserId == userId).ToList();
+            }
+            if (grammaticsDbList.Count != 0)
+            {
+                var grammaticList = new List<Grammatic>();
+                foreach (var item in grammaticsDbList)
+                    grammaticList.Add(new Grammatic
+                    {
+                        CreateDate = item.CreateDate,
+                        CreateUserId = item.CreateUserId,
+                        GrammaticId = item.GrammaticId,
+                        EditDate = item.EditDate,
+                        Text = item.Text,
+                        Title = item.Title,
+                        CreateUserTitle = (await _userManager.FindByIdAsync(item.CreateUserId.ToString())).UserName,
+                        IsValidate = item.IsValidate,
+                        IsEdit = item.IsEdit,
+                        FromLanguage = item.FromLanguage,
+                        ToLanguage = item.ToLanguage
+                    });
+                return grammaticList;
+            }
+            return new List<Grammatic>();
         }
         public async Task<Grammatic> Update(Grammatic grammatic)
         {
@@ -110,8 +144,8 @@ namespace LanguageTranslate.Repository
                 grammaticDb.Text = grammatic.Text;
                 grammaticDb.Title = grammatic.Title;
                 grammaticDb.IsEdit = true;
-                grammaticDb.LastUserEditId = Guid.Parse(_userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name).Result.Id);
-                grammaticDb.LastDateEdit = DateTime.Now;
+                grammaticDb.IsValidate = false;
+                grammaticDb.EditDate = DateTime.Now;
                 grammaticDb.FromLanguage = grammatic.FromLanguage;
                 grammaticDb.ToLanguage = grammatic.ToLanguage;
 
@@ -130,7 +164,7 @@ namespace LanguageTranslate.Repository
                 {
                     if (verificiedGrammarDB == null)
                     {
-                        string dir = Directory.GetDirectories(Directory.GetCurrentDirectory()).FirstOrDefault(s => s == "Grammatics");
+                        string dir = Directory.GetDirectories(Directory.GetCurrentDirectory()).FirstOrDefault(s => s.Contains("Grammatics"));
                         if (dir == null)
                         {
                             Directory.CreateDirectory(Directory.GetCurrentDirectory() + "/Grammatics");
@@ -141,13 +175,12 @@ namespace LanguageTranslate.Repository
                         {
                             GrammaticId = id,
                             VerifiedGrammarId = Guid.NewGuid(),
-                            LastDateEdit = grammaticsDb.LastDateEdit,
-                            LastUserEditId = grammaticsDb.LastUserEditId,
+                            EditDate = grammaticsDb.EditDate,
                             Text = grammaticsDb.Text,
                             Title = grammaticsDb.Title,
                             Path = path,
                             FromLanguage = grammaticsDb.FromLanguage,
-                            ToLanguage = grammaticsDb.ToLanguage
+                            ToLanguage = grammaticsDb.ToLanguage,
                         };
                         _ltContext.VerifiedGrammars.Add(verificiedGrammarDB);
 
@@ -159,15 +192,13 @@ namespace LanguageTranslate.Repository
                         File.WriteAllText(path, grammaticsDb.Text);
                         verificiedGrammarDB.Title = grammaticsDb.Title;
                         verificiedGrammarDB.Text = grammaticsDb.Text;
-                        verificiedGrammarDB.LastDateEdit = grammaticsDb.LastDateEdit;
-                        verificiedGrammarDB.LastUserEditId = grammaticsDb.LastUserEditId;
+                        verificiedGrammarDB.EditDate = grammaticsDb.EditDate;
                         verificiedGrammarDB.ToLanguage = grammaticsDb.ToLanguage;
                         verificiedGrammarDB.FromLanguage = grammaticsDb.FromLanguage;
 
                         _ltContext.Entry(verificiedGrammarDB).State = EntityState.Modified;
                     }
                     grammaticsDb.IsValidate = true;
-                    grammaticsDb.IsEdit = false;
                     _ltContext.Entry(grammaticsDb).State = EntityState.Modified;
                 }
 
@@ -181,8 +212,7 @@ namespace LanguageTranslate.Repository
                     {
                         grammaticsDb.Title = verificiedGrammarDB.Title;
                         grammaticsDb.Text = verificiedGrammarDB.Text;
-                        grammaticsDb.LastDateEdit = verificiedGrammarDB.LastDateEdit;
-                        grammaticsDb.LastUserEditId = verificiedGrammarDB.LastUserEditId;
+                        grammaticsDb.EditDate = verificiedGrammarDB.EditDate;
                         grammaticsDb.ToLanguage = verificiedGrammarDB.ToLanguage;
                         grammaticsDb.FromLanguage = verificiedGrammarDB.FromLanguage;
                         _ltContext.Entry(grammaticsDb).State = EntityState.Modified;
@@ -204,7 +234,7 @@ namespace LanguageTranslate.Repository
             VerifiedGrammars vgDb = FindVerifiedGrammar(grammaticId);
             if (vgDb != null)
             {
-                string path = Directory.GetDirectories(Directory.GetCurrentDirectory() + "/Grammatics/").FirstOrDefault(s => s == vgDb.Title);
+                string path = Directory.GetDirectories(Directory.GetCurrentDirectory() + "/Grammatics/").FirstOrDefault(s => s.Contains(vgDb.Title));
                 if (path == null)
                     path = Directory.GetCurrentDirectory() + "/Grammatics/" + vgDb.Title;
                 Directory.CreateDirectory(path);
@@ -217,7 +247,10 @@ namespace LanguageTranslate.Repository
                 };
                 process.StartInfo = startInfo;
                 process.Start();
+
+                process.WaitForExit();
                 Grammatic grammatic = await FindAsync(grammaticId);
+                Grammatics grammaticsDb = _ltContext.Grammatics.Find(grammatic.GrammaticId);
                 grammatic.ResultGenerate = GenerateDLL(path, vgDb.Title);
                 if (grammatic.ResultGenerate.ResultCode == 1)
                 {
@@ -243,8 +276,11 @@ namespace LanguageTranslate.Repository
                         };
                         _ltContext.GeneratedDLLs.Add(generatedDLL);
                     }
+
+                    grammaticsDb.IsEdit = false;
+                    _ltContext.Entry(grammaticsDb).State = EntityState.Modified;
                     await _ltContext.SaveChangesAsync();
-                    CalculatePath();
+                    await CalculatePath();
                 }
                 return grammatic;
             }
@@ -272,6 +308,7 @@ namespace LanguageTranslate.Repository
                     };
                     if (!result.Success)
                     {
+                        resultGenerate.ErrorsMessage = new List<string>();
                         foreach (var item in result.Diagnostics)
                         {
                             resultGenerate.ErrorsMessage.Add(item.ToString());
@@ -317,7 +354,7 @@ namespace LanguageTranslate.Repository
         }
         public async Task<Translate> TranslateCode(Translate translate)
         {
-            List<PathReferences> references = _ltContext.PathReferences.Where(s => s.PathId == translate.SelectGrammatic).ToList();
+            List<PathReferences> references = _ltContext.PathReferences.Where(s => s.PathId == translate.SelectGrammatic).OrderBy(s => s.OrderId).ToList();
             List<GeneratedDLLs> dlls = new List<GeneratedDLLs>();
             foreach (PathReferences item in references)
             {
@@ -397,7 +434,7 @@ namespace LanguageTranslate.Repository
                     FromLanguage = translate.FromLanguage,
                     ToLanguage = translate.ToLanguage,
                     DateTranslate = DateTime.Now,
-                    GrammaticId = translate.SelectGrammatic,
+                    Сonveyor = translate.Grammatics.First(s => s.Value == translate.SelectGrammatic.ToString()).Text,
                     UserId = Guid.Parse(_userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name).Result.Id)
                 });
                 await _ltContext.SaveChangesAsync();
@@ -420,6 +457,7 @@ namespace LanguageTranslate.Repository
             List<HistoryTranslate> historyTranslates = new List<HistoryTranslate>();
             if (history.Count > 0)
             {
+                history = history.OrderByDescending(s => s.DateTranslate).ToList();
                 foreach (HistoryTranslates item in history)
                 {
                     historyTranslates.Add(new HistoryTranslate
@@ -428,7 +466,7 @@ namespace LanguageTranslate.Repository
                         HistoryTranslateId = item.HistoryTranslateId,
                         ToLanguage = item.ToLanguage,
                         TranslateDate = item.DateTranslate.ToString("dd.MM.yy  HH:mm"),
-                        Grammatic = _ltContext.Paths.First(s=>s.PathId==item.GrammaticId).Title
+                        Grammatic = item.Сonveyor
                     });
                 }
             }
@@ -444,11 +482,11 @@ namespace LanguageTranslate.Repository
                     HistoryTranslateId = translate.HistoryTranslateId,
                     ToLanguage = translate.ToLanguage,
                     TranslateDate = translate.DateTranslate.ToString("dd.MM.yy  HH:mm"),
-                    Grammatic = _ltContext.Paths.First(s => s.PathId == translate.GrammaticId).Title
+                    Grammatic = translate.Сonveyor
                 };
             return null;
         }
-        public void CalculatePath()
+        public async Task CalculatePath()
         {
             _ltContext.PathReferences.RemoveRange(_ltContext.PathReferences.ToList());
             _ltContext.Paths.RemoveRange(_ltContext.Paths.ToList());
@@ -536,6 +574,7 @@ namespace LanguageTranslate.Repository
                                     {
                                         Id = Guid.NewGuid(),
                                         PathId = pathGuid,
+                                        OrderId = i,
                                         GrammaticDllId = _ltContext.GeneratedDLLs.First(f => f.FromLanguage == languages[(recoveryPath[i])] && f.ToLanguage == languages[(recoveryPath[i + 1])]).GeneratedDLLId
                                     });
                             }
@@ -543,7 +582,7 @@ namespace LanguageTranslate.Repository
                     }
                 }
             }
-            _ltContext.SaveChangesAsync();
+            await _ltContext.SaveChangesAsync();
         }
         public List<PathTranslate> GetPaths()
         {
@@ -559,6 +598,32 @@ namespace LanguageTranslate.Repository
                 });
             }
             return paths;
+        }
+        public async Task<dynamic> AddGrammaticWithTransform(GrammaticTransform grammaticTransform)
+        {
+            VerifiedGrammars verifiedGrammars = FindVerifiedGrammar(grammaticTransform.SelectGrammatic);
+            LangExtension langExtension = new LangExtension();
+            Result result = langExtension.Transform(verifiedGrammars.Path, grammaticTransform.Text);
+            if (result.ResultCode == 1)
+            {
+                Guid grammaticId = await AddGrammatic(new Grammatic
+                {
+                    Text = result.ResultMessage,
+                    Title = grammaticTransform.Title,
+                    FromLanguage = grammaticTransform.FromLanguage,
+                    ToLanguage = grammaticTransform.ToLanguage
+                });
+                return await FindAsync(grammaticId);
+            }
+            else
+            {
+                grammaticTransform.Result = new ResultGenerate
+                {
+                    ErrorsMessage = new List<string> { result.ResultMessage },
+                    ResultCode = 0
+                };
+                return grammaticTransform;
+            }
         }
     }
     public class AssemblyLoader : AssemblyLoadContext

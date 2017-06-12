@@ -5,10 +5,10 @@
 
 
 <div class="row" style="margin-top:10px">
-    <form  asp-action="Index" method="post">
+    <form asp-action="Index" method="post">
         <div class="form-inline" style="display:inherit;text-align: center;margin: 10px;">
-        
-            <span class="form-control" >@Model.Grammatic</span>
+
+            <span class="form-control">@Model.Grammatic</span>
             <span class="form-control">@Model.TranslateDate</span>
         </div>
         <div>
@@ -18,6 +18,9 @@
             <div class="col-md-offset-1 col-md-5 form-group">
                 <textarea class="form-control resize" readonly style="resize: none;" rows="20" asp-for="ToLanguage" name="ToLanguage"></textarea>
             </div>
+        </div>
+        <div style="margin:10px">
+            <a style="margin:5px" class="btn btn-default" asp-action="HistoryTranslate">Назад в список</a>
         </div>
     </form>
 </div>

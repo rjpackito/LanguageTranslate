@@ -15,7 +15,7 @@
         <strong>Во время конвертации возникли ошибки. Список ошибок:</strong>
         @foreach (var item in Model.Result.ErrorsMessage)
                 {
-            <span>item</span>
+            <span>@item</span>
         }
     </div>
 }
@@ -26,7 +26,8 @@
         <div class="form-inline" style="display:inherit;text-align: center;margin: 10px;">
         
             <select class="form-control" asp-for="SelectGrammatic" asp-items="Model.Grammatics"></select>
-            <button class="btn btn-success" type="submit">Транслировать</button>
+            <button class="btn btn-success" type="submit">Конвертировать</button>
+            
         </div>
         <div>
             <div class="col-md-5 form-group">
@@ -35,6 +36,9 @@
             <div class="col-md-offset-1 col-md-5 form-group">
                 <textarea class="form-control resize" style="resize: none;" rows="20" asp-for="ToLanguage" name="ToLanguage"></textarea>
             </div>
+            
         </div>
     </form>
 </div>
+<span>Для проверки результата конвертирования, предлагаем перейти на портал с онлайн компиляторами</span>
+<a href="http://ideone.com/">http://ideone.com/</a>

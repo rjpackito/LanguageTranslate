@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -15,21 +16,30 @@ namespace LanguageTranslate.Models
         [DisplayName("Название")]
         public string Title { get; set; }
         [DisplayName("Последняя дата редактирования")]
-        public DateTime LastDateEdit { get; set; }
+        public DateTime EditDate { get; set; }
         [DisplayName("Текст грамматики")]
         public string Text { get; set; }
         public Guid CreateUserId { get; set; }
-        public Guid LastUserEditId { get; set; }
         [DisplayName("Создал")]
         public string CreateUserTitle { get; set; }
-        [DisplayName("Отредактировал")]
-        public string LastUserEditTitle { get; set; }
         public bool IsEdit { get; set; }
         public bool IsValidate { get; set; }
         public ResultGenerate ResultGenerate { get; set; }
-        [DisplayName("Из языка программирования")]
+        [DisplayName("Исходный ЯП")]
         public string FromLanguage { get; set; }
-        [DisplayName("В язык программирования")]
+        [DisplayName("Целевой ЯП")]
+        public string ToLanguage { get; set; }
+    }
+    public class GrammaticTransform
+    {
+        public List<SelectListItem> Grammatics { get; set; }
+        public ResultGenerate Result { get; set; }
+        public Guid SelectGrammatic { get; set; }
+        public string Text { get; set; }
+        public string Title { get; set; }
+        [DisplayName("Исходный ЯП")]
+        public string FromLanguage { get; set; }
+        [DisplayName("Целевой ЯП")]
         public string ToLanguage { get; set; }
     }
 }

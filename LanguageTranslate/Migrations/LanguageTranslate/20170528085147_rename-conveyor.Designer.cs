@@ -5,12 +5,13 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using LanguageTranslate.Data;
 
-namespace LanguageTranslate.Migrations
+namespace LanguageTranslate.Migrations.LanguageTranslate
 {
     [DbContext(typeof(LanguageTranslateContext))]
-    partial class LanguageTranslateContextModelSnapshot : ModelSnapshot
+    [Migration("20170528085147_rename-conveyor")]
+    partial class renameconveyor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -45,13 +46,15 @@ namespace LanguageTranslate.Migrations
 
                     b.Property<Guid>("CreateUserId");
 
-                    b.Property<DateTime>("EditDate");
-
                     b.Property<string>("FromLanguage");
 
                     b.Property<bool>("IsEdit");
 
                     b.Property<bool>("IsValidate");
+
+                    b.Property<DateTime>("LastDateEdit");
+
+                    b.Property<Guid>("LastUserEditId");
 
                     b.Property<string>("Text");
 
@@ -117,11 +120,13 @@ namespace LanguageTranslate.Migrations
                     b.Property<Guid>("VerifiedGrammarId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("EditDate");
-
                     b.Property<string>("FromLanguage");
 
                     b.Property<Guid>("GrammaticId");
+
+                    b.Property<DateTime>("LastDateEdit");
+
+                    b.Property<Guid>("LastUserEditId");
 
                     b.Property<string>("Path");
 

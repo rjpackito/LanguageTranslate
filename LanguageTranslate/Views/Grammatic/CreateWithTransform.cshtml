@@ -1,0 +1,48 @@
+﻿@{
+    ViewData["Title"] = "Добавить грамматику на основе существующей";
+}
+@model GrammaticTransform
+<h3 for="name">Новая грамматика на основе существующей</h3>
+<div asp-validation-summary="All" class="text-danger"></div>
+@if (Model.Result != null && Model.Result.ResultCode == 0)
+{
+    <div class="alert alert-danger">
+        <strong>Во время генерации возникли ошибки. Список ошибок:</strong>
+        @foreach (var item in Model.Result.ErrorsMessage)
+                {
+            <br />
+                <span>@item</span>
+
+        }
+    </div>
+}
+<form asp-action="CreateWithTransform" method="post">
+    <div class="form-group">
+        <div class="form-group">
+            <label for="Title">Название:</label>
+            <input name="Title" asp-for="Title" class="form-control" id="Title" />
+        </div>
+        <div class="form-group">
+            <label for="FromLanguage">Исходный ЯП:</label>
+            <input name="FromLanguage" asp-for="FromLanguage" class="form-control" id="Title" />
+        </div>
+        <div class="form-group">
+            <label for="ToLanguage">Целевой ЯП:</label>
+            <input name="ToLanguage" asp-for="ToLanguage" class="form-control" id="Title" />
+        </div>
+        <div class="form-group">
+            <label for="ToLanguage">Родительская грамматика:</label>
+            <select class="form-control" asp-for="SelectGrammatic" asp-items="Model.Grammatics"></select>
+        </div>
+        <div class="form-group">
+            <label for="Text">Текст преобразования:</label>
+            <textarea id="Text" asp-for="Text" name="Text" class="form-control resize" rows="20"></textarea>
+        </div>
+
+    </div>
+    <button type="submit" class="btn btn-primary">Добавить</button>
+    <a class="btn btn-default" asp-action="Index">Назад в список</a>
+
+</form>
+
+

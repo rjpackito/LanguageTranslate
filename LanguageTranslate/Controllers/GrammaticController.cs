@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using LanguageTranslate.Models;
 using Microsoft.AspNetCore.Authorization;
 using LanguageTranslate.Repository;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace LanguageTranslate.Controllers
 {
@@ -22,17 +23,17 @@ namespace LanguageTranslate.Controllers
             _userManager = userManager;
         }
         public IActionResult Create() => View();
-        public IActionResult Index() => View(_ltManager.GetAll());
+        public async Task<IActionResult> Index() => View(await _ltManager.GetAll());
         [HttpPost]
         public async Task<IActionResult> Create(Grammatic grammatic)
         {
 
             Guid grammaticGuid = await _ltManager.AddGrammatic(grammatic);
-            return View("Details", grammaticGuid);
+            return View("Details", await _ltManager.FindAsync(grammaticGuid));
         }
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(Guid id)
         {
-            Grammatic grammatic = await _ltManager.FindAsync(Guid.Parse(id));
+            Grammatic grammatic = await _ltManager.FindAsync(id);
             if (grammatic == null)
             {
                 return View("Error");
@@ -56,7 +57,7 @@ namespace LanguageTranslate.Controllers
             {
                 return View("Error");
             }
-            return View("Edit",await _ltManager.Update(grammatic));
+            return View("Edit", await _ltManager.Update(grammatic));
         }
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Validate(string id)
@@ -66,6 +67,7 @@ namespace LanguageTranslate.Controllers
             {
                 return View("Error");
             }
+            ViewBag.Validate = true;
             return View("Details", grammatic);
         }
         [HttpPost]
@@ -73,12 +75,60 @@ namespace LanguageTranslate.Controllers
         public async Task<IActionResult> Validate(string id, int isvalid)
         {
             Guid grammaticGuid = await _ltManager.VerificiedChanges(Guid.Parse(id), isvalid == 1);
-            return View("Index", _ltManager.GetAll());
+            return RedirectToAction("Index", await _ltManager.GetAll());
         }
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> GenerateFile(string id)
         {
+            ViewBag.Validate = true;
             return View("Details", await _ltManager.GenerataFile(Guid.Parse(id)));
+        }
+        public async Task<IActionResult> Delete(string id)
+        {
+            await _ltManager.Remove(Guid.Parse(id));
+            return RedirectToAction("Index", await _ltManager.GetAll());
+        }
+        public async Task<IActionResult> CreateWithTransform()
+        {
+            GrammaticTransform grammaticTransform = new GrammaticTransform
+            {
+                Grammatics = (await _ltManager.GetAll())
+                .Select(s =>
+                new SelectListItem
+                {
+                    Value = s.GrammaticId.ToString(),
+                    Text = s.Title.ToString(),
+                    Selected = true
+                })
+                    .ToList()
+            };
+            return View(grammaticTransform);
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> CreateWithTransform(GrammaticTransform grammaticTransform)
+        {
+            var result = await _ltManager.AddGrammaticWithTransform(grammaticTransform);
+            if (result is Grammatic)
+            {
+                Grammatic grammatic = result as Grammatic;
+                return RedirectToAction("Details", new { id = grammatic.GrammaticId });
+            }
+            else
+            {
+                grammaticTransform = result as GrammaticTransform;
+                grammaticTransform.Grammatics = (await _ltManager.GetAll())
+                .Select(s =>
+                new SelectListItem
+                {
+                    Value = s.GrammaticId.ToString(),
+                    Text = s.Title.ToString(),
+                    Selected = true
+                })
+                    .ToList();
+                return View(grammaticTransform);
+            }
+
         }
     }
 }

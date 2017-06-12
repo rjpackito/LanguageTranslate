@@ -5,7 +5,7 @@
 }
 <!--好-->
 <div>
-    <h4>Грамматика</h4>
+    <h3>Грамматика</h3>
     <hr />
     <div class="dl-horizontal">
         @if (Model.ResultGenerate != null && Model.ResultGenerate.ResultCode == 1)
@@ -20,10 +20,16 @@
                 <strong>Во время генерации возникли ошибки. Список ошибок:</strong>
                 @foreach (var item in Model.ResultGenerate.ErrorsMessage)
                 {
-                    <span>item</span>
+                    <br />
+                    <span>@item</span>
+
                 }
             </div>
         }
+        <div>
+            <label asp-for="CreateUserTitle"></label>
+            <span>@Model.CreateUserTitle</span>
+        </div>
         <div>
             <label asp-for="CreateDate"></label>
             <span>@Model.CreateDate</span>
@@ -33,28 +39,21 @@
             <span>@Model.Title</span>
         </div>
         <div>
-            <label asp-for="LastDateEdit"></label>
-            <span>@Model.LastDateEdit</span>
+            <label asp-for="EditDate"></label>
+            <span>@Model.EditDate</span>
         </div>
+
         <div>
             <label asp-for="Text"></label>
             <textarea id="Text" readonly asp-for="Text" name="Text" class="form-control resize" rows="20"></textarea>
-        </div>
-        <div>
-            <label asp-for="CreateUserTitle"></label>
-            <span>@Model.CreateUserTitle</span>
-        </div>
-        <div>
-            <label asp-for="LastUserEditTitle"></label>
-            <span>@Model.LastUserEditTitle</span>
         </div>
     </div>
 </div>
 <div>
     <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.GrammaticId">Редактировать</a>
-    @if (User.IsInRole("Administrator"))
+    @if (User.IsInRole("Administrator") && ViewBag.Validate != null && ViewBag.Validate == true)
     {
-        @if (!Model.IsValidate || Model.IsEdit)
+        @if (!Model.IsValidate)
         {<form asp-action="Validate" method="post">
 
         <button type="submit" asp-route-id="@Model.GrammaticId" asp-route-isvalid="1" class="btn btn-success">Верифицировать</button>
@@ -62,7 +61,7 @@
 
     </form>
         }
-        @if (Model.IsValidate)
+        @if (Model.IsValidate && Model.IsEdit)
         {
             <a asp-action="GenerateFile" class="btn btn-success" asp-route-id="@Model.GrammaticId">Сгенерировать</a>
         }

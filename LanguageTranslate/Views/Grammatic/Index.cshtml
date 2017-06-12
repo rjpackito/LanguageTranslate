@@ -2,30 +2,28 @@
 @{
     ViewData["Title"] = "Index";
 }
-<h2>Список грамматик</h2>
+<h3>Список грамматик</h3>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a class="btn btn-default" asp-action="Create">Добавить грамматику</a>
+    <a class="btn btn-default" asp-action="CreateWithTransform">Добавить грамматику на основе существующей</a>
 </p>
 <table class="table">
     <thead>
         <tr>
-            @*<th>
-                    <label asp-for="CreateDate"></label>
-                </th>
-                <th>
-                    <label asp-for="Title"></label>
-                </th>
-                <th>
-                    <label asp-for="LastDateEdit"></label>
-                </th>
-                <th>
-                    <label asp-for="CreateUserTitle"></label>
-                </th>
-                <th>
-                    <label asp-for="LastUserEditTitle"></label>
-                </th>
-                <th></th>*@
+            <th>
+                Дата добавления
+            </th>
+            <th>
+                Дата последнего редактирования
+            </th>
+            <th>
+                Название
+            </th>
+            <th>
+                Создатель
+            </th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -36,23 +34,21 @@
                     @item.CreateDate.ToString("dd.MM.yyyy HH:mm")
                 </td>
                 <td>
-                    @item.Title
+                    @item.EditDate.ToString("dd.MM.yyyy HH:mm")
                 </td>
                 <td>
-                    @item.LastDateEdit.ToString("dd.MM.yyyy HH:mm")
+                    @item.Title
                 </td>
                 <td>
                     @item.CreateUserTitle
                 </td>
                 <td>
-                    @item.LastUserEditTitle
-                </td>
-                <td>
                     <a asp-action="Edit" class="btn btn-primary" asp-route-id="@item.GrammaticId">Редактировать</a>
-                    <a asp-action="Details" class="btn btn-info" asp-route-id="@item.GrammaticId">Просмотр</a> 
-@if (User.IsInRole("Administrator"))
-{
-                    <a asp-action="Validate" class="btn btn-success" asp-route-id="@item.GrammaticId">Валидация</a>}
+                    <a asp-action="Details" class="btn btn-info" asp-route-id="@item.GrammaticId">Просмотр</a>
+                    @if (User.IsInRole("Administrator") && (@item.IsEdit || !@item.IsValidate))
+                    {
+                        <a asp-action="Validate" class="btn btn-success" asp-route-id="@item.GrammaticId">Валидация</a>
+                    }
                     <a asp-action="Delete" class="btn btn-danger" asp-route-id="@item.GrammaticId">Удалить</a>
                 </td>
             </tr>

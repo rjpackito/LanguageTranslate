@@ -11,9 +11,8 @@ namespace LanguageTranslate.Data.DbModels
         [Key]
         public Guid VerifiedGrammarId { get; set; }
         public string Title { get; set; }
-        public DateTime LastDateEdit { get; set; }
+        public DateTime EditDate { get; set; }
         public string Text { get; set; }
-        public Guid LastUserEditId { get; set; }
         public string Path { get; set; }
         public Guid GrammaticId { get; set; }
         public string FromLanguage { get; set; }

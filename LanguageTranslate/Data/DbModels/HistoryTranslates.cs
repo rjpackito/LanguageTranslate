@@ -13,7 +13,7 @@ namespace LanguageTranslate.Data.DbModels
         public string FromLanguage { get; set; }
         public string ToLanguage { get; set; }
         public Guid UserId { get; set; }
-        public Guid GrammaticId { get; set; }
+        public string Сonveyor { get; set; }
         public DateTime DateTranslate { get; set; }
     }
 }

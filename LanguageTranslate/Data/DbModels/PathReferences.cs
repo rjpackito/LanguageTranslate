@@ -12,5 +12,6 @@ namespace LanguageTranslate.Data.DbModels
         public Guid Id { get; set; }
         public Guid GrammaticDllId { get; set; }
         public Guid PathId { get; set; }
+        public int OrderId { get; set; }
     }
 }
